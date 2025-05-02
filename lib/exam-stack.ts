@@ -56,7 +56,7 @@ export class ExamStack extends cdk.Stack {
         resources: [table.tableArn],
       }),
     });
-
+    table.grantReadWriteData(question1Fn)
     const api = new apig.RestApi(this, "ExamAPI", {
       description: "Exam api",
       deployOptions: {
@@ -70,7 +70,15 @@ export class ExamStack extends cdk.Stack {
       },
     });
 
-    const anEndpoint = api.root.addResource("patha");
+    const crewEndpoint = api.root.addResource("crew");
+    const moviesEndpoint = crewEndpoint.addResource("movies");
+    const movieIdEndpoint = moviesEndpoint.addResource("{movieId}");
+    
+    movieIdEndpoint.addMethod(
+      "GET",
+      new apig.LambdaIntegration(question1Fn, { proxy: true })
+    );
+    
 
 
     // ==================================
