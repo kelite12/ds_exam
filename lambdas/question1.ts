@@ -4,6 +4,7 @@ import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
 
 const client = createDDbDocClient();
 
+    // Question 2
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   try {
     console.log("Event: ", JSON.stringify(event));
