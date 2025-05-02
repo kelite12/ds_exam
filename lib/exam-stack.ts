@@ -95,6 +95,10 @@ export class ExamStack extends cdk.Stack {
       receiveMessageWaitTime: cdk.Duration.seconds(5),
     });
 
+    const queueB = new sqs.Queue(this, "QueueB", {
+      receiveMessageWaitTime: cdk.Duration.seconds(5),
+    });
+
     const lambdaXFn = new lambdanode.NodejsFunction(this, "LambdaXFn", {
       architecture: lambda.Architecture.ARM_64,
       runtime: lambda.Runtime.NODEJS_22_X,
@@ -114,10 +118,14 @@ export class ExamStack extends cdk.Stack {
       memorySize: 128,
       environment: {
         REGION: "eu-west-1",
+        QUEUE_B_URL: queueB.queueUrl,
       },
     });
 
- 
+   
+    queueB.grantSendMessages(lambdaYFn);
+
+   
     topic1.addSubscription(new subs.SqsSubscription(queueA, {
       filterPolicy: {
         country: sns.SubscriptionFilter.stringFilter({
@@ -126,7 +134,6 @@ export class ExamStack extends cdk.Stack {
       },
     }));
 
-  
     topic1.addSubscription(new subs.LambdaSubscription(lambdaYFn, {
       filterPolicy: {
         country: sns.SubscriptionFilter.stringFilter({
@@ -135,7 +142,7 @@ export class ExamStack extends cdk.Stack {
       },
     }));
 
-   
+    
     lambdaXFn.addEventSource(new events.SqsEventSource(queueA));
   }
 }
